@@ -1,0 +1,48 @@
+name: TiagoDualMultiObjFetchingBHyRL
+
+params:
+  seed: ${...seed}
+
+  algo:
+    name: BHyRL # Has to match class name if using mushroom RL library
+
+  load_checkpoint: ${if:${...checkpoint},True,False} # flag which sets whether to load the checkpoint
+  load_path: ${...checkpoint} # path to the checkpoint to load
+
+  config:
+    name: ${resolve_default:${....train.name},${....experiment}}
+    full_experiment_name: ${.name}
+    device: ${....rl_device}
+    device_name: ${....rl_device}
+    num_actors: ${....task.env.numEnvs}
+    log_checkpoints: True
+    
+    # network:
+    n_features: 256 # Default is two layer FCN
+    gru_hidden_size: 0 # 0 for policy without rnn
+    gru_layers: 1
+    obs_embedding_size: 256
+    action_embedding_size: 8
+    reward_embedding_size: 4
+    goal_pose_embedding_size: 8
+    robot_pose_embedding_size: 4
+    lr_actor_net: 0.0003
+    lr_critic_net: 0.0003
+    batch_size: 256
+    # algo:
+    initial_replay_size: 1024
+    max_replay_size: 75000
+    warmup_transitions: 1024
+    tau: 0.005
+    lr_alpha: 0.0003
+    temperature: 1.0 # For the softmax of gumbel
+    # target_entropy: # automatic as per action space
+    log_std_min: -3 # Clip the agent's policy log std to avoid very narrow gaussian policies
+    # runner:
+    n_epochs: 600
+    n_steps: 1000 # training
+    n_steps_test: 250
+    # boosting:
+    prior_agents: #[logs/TiagoDualReaching/TiagoDualReachingBHyRL/2022-11-11-15-42-48/2022-11-11-17-28-13/agent-212.msh] # list of prior agent paths
+    use_kl_on_pi: True
+    kl_on_pi_alpha: 1e-3

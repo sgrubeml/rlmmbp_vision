@@ -1,0 +1,7 @@
+name: Slurm_chain
+
+chain_jobs:
+  chained: True
+  resume_from_epoch: 0
+  resume_from_seed: 0
+  random_seed_set: False

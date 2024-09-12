@@ -1,0 +1,3 @@
+[submodule "iSDF"]
+	path = iSDF
+	url = https://github.com/facebookresearch/iSDF.git

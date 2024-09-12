@@ -1,0 +1,182 @@
+# used to create the object
+name: TiagoDualMultiObjFetching
+
+physics_engine: ${..physics_engine}
+
+# if given, will override the device setting in gym.
+env:
+  numEnvs: 1
+  envSpacing: 3.0
+  resetDist: 1.0
+  maxEffort: 400.0
+  
+  gamma: 0.99
+  horizon: 200
+  # episodeLength: 1000
+  enableDebugVis: False
+
+  # Move group to be used
+  move_group: "arm_left" # String. Can be arm_left or arm_right
+  use_torso: True # Use torso joint too
+  use_base: False
+  use_head: False
+  randomize_robot_on_reset: False
+  face_goal_on_reset: True
+  # Hybrid action space
+  continous_actions: 3 # SE2 base pose + head pose(pan and tilt) --> can be either 3 or 5
+  discrete_actions: 2 # 0 or 1 (arm activation)
+  # Set custom state and action space limits
+  max_rot_vel: 62.83188 # max_rot_velocity per step: deg_to_rad(30) = dt(0.008333333333333333) * max_rot_vel(62.83188)
+  max_base_xy_vel: 30
+  max_head_pan_vel: 30
+  max_head_tilt_vel: 62.83188
+  world_xy_radius: 3.0 # metres
+  wall_offset: 1.5
+  num_obstacles: 3 # table
+  num_grasp_objects: 10 # YCB objects
+  action_xy_radius: 1.0 # position control
+  action_ang_lim: 3.14159265 # pi
+  # success and rewards:
+  goal_pos_thresh: 0.01 # metres
+  goal_ang_thresh: 0.08726646259 # 5*np.pi/180
+  # goal_z_lim: [0.2, 1.5] # metres
+  reward_success: 1.0
+  reward_dist_weight: 0.1
+  reward_look_at_goal: -0.0025
+  reward_new_points: 0.00001 # for vox_downsample 0.00001, for stack ?
+  reward_noIK: -0.0025
+  # reward_timeout: 0.0
+  reward_collision: -0.1
+  terminate_on_collision: True
+  obs_representation: "keyframe_voxel" # either "voxel_downsample", "stack", "keyframe_voxel", "tsdf" or "bbox"
+  
+  obstacle_scale: 'long' # either random, long, or normal
+  scene_type: 'complex'
+  navigation_task : 'simple'
+  
+  random_goal: False
+  controlFrequencyInv: 1 # 120 Hz
+  # camera intrinsics
+  fx: 230.5
+  fy: 230.5
+  cx: 160.0
+  cy: 120.0
+
+obs:
+  action_history: True
+  reward_history: False
+  robot_pose_history: True
+  goal_pose_history: False
+  obs_history_len: 1
+  robot_state_history_len: 10
+
+  bbox:
+    observation_history: False
+
+  visual:
+    downsampling: 'distance' # either uniform or distance or farthest
+    encoder: 'pointnet' #either pointnet, pointnet2, voxel_encoder
+    pcl_size: 2048
+    stack:
+      channels: 4 # xyz + pcl position encoding in map
+      observation_history: True
+      encoder: 'pointnet' #either pointnet, pointnet2
+    keyframe_voxel:
+      num_keyframes: 10
+      portion_new_points: 0.2
+      observation_history: False
+      encoder: 'pointnet' #either pointnet, pointnet2
+    voxel_downsample:
+      observation_history: False
+      encoder: 'pointnet' #either pointnet, pointnet2
+    tsdf:
+      observation_history: False
+      tsdf_resolution: 256
+      encoder: 'voxel_encoder' #voxel_encoder
+
+
+
+
+
+sim:
+  dt: 0.008333333333333333 # 1/120 s
+  use_gpu_pipeline: ${eq:${...pipeline},"gpu"}
+  gravity: [0.0, 0.0, -9.81]
+  add_ground_plane: True
+  add_distant_light: True
+  use_flatcache: False
+  enable_scene_query_support: False
+  disable_contact_processing: False
+
+  # set to True if you use camera sensors in the environment
+  enable_cameras: True
+
+  default_physics_material:
+    static_friction: 1.0
+    dynamic_friction: 1.0
+    restitution: 0.0
+
+  physx:
+    worker_thread_count: ${....num_threads}
+    solver_type: ${....solver_type}
+    use_gpu: ${eq:${....sim_device},"gpu"}
+    solver_position_iteration_count: 16
+    solver_velocity_iteration_count: 16
+    contact_offset: 0.02
+    rest_offset: 0.0
+    bounce_threshold_velocity: 2.0
+    friction_offset_threshold: 0.01
+    friction_correlation_distance: 0.0005
+    enable_sleeping: True
+    enable_stabilization: True
+    max_depenetration_velocity: 100.0
+
+    # GPU buffers
+    gpu_max_rigid_contact_count: 524288
+    gpu_max_rigid_patch_count: 81920
+    gpu_found_lost_pairs_capacity: 8192
+    gpu_found_lost_aggregate_pairs_capacity: 262144
+    gpu_total_aggregate_pairs_capacity: 8192
+    gpu_max_soft_body_contacts: 1048576
+    gpu_max_particle_contacts: 1048576
+    gpu_heap_capacity: 67108864
+    gpu_temp_buffer_capacity: 16777216
+    gpu_max_num_partitions: 8
+
+
+# sim asset configs here
+  TiagoDualHolo:
+    # -1 to use default values
+    override_usd_defaults: False
+    fixed_base: False # Needs to be false here but can be set in usd file. Even with fixed_base, virtual joints can still be used to move the base.
+    enable_self_collisions: False
+    enable_gyroscopic_forces: True
+    # also in stage params
+    # per-actor
+    solver_position_iteration_count: 16
+    solver_velocity_iteration_count: 16
+    sleep_threshold: 0.005
+    stabilization_threshold: 0.001
+    # per-body
+    density: -1
+    # max_depenetration_velocity: 100.0
+    # per-shape
+    #contact_offset: 0.02
+    #rest_offset: 0.001
+
+  object:
+    # -1 to use default values
+    override_usd_defaults: False
+    enable_self_collisions: False
+    enable_gyroscopic_forces: True
+    # also in stage params
+    # per-actor
+    solver_position_iteration_count: 4
+    solver_velocity_iteration_count: 0
+    sleep_threshold: 0.005
+    stabilization_threshold: 0.001
+    # per-body
+    density: -1
+    max_depenetration_velocity: 3.0
+    #contact_offset: -inf
+    #rest_offset: 0.001
